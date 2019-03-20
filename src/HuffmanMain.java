@@ -53,24 +53,24 @@ public class HuffmanMain {
 	}
 	
 	public static void minDownHeap(ArrayList<Heap> heap,int index) {
-		System.out.println("inside minDownHeap: "+heap.size()+"--"+index);
+		//System.out.println("inside minDownHeap: "+heap.size()+"--"+index);
 		int right = 2*index+2;
 		int left = 2*index+1;
 		Heap root = null;
 		Heap current = heap.get(index);
 		if(right < heap.size()) {//lowest = lowest of tree 
-			root = heap.get((heap.get(left)).getFrequency() < (heap.get(right)).getFrequency() ? left : right) ;
-			root = (root.getFrequency() < current.getFrequency()) ? root : current;
-			System.out.println("if-->"+heap.indexOf(root));
+			root = heap.get((heap.get(left)).freq < (heap.get(right)).freq ? left : right) ;
+			root = (root.freq < current.freq) ? root : current;
+			//System.out.println("if-->"+heap.indexOf(root));
 		}else {//if flow comes here, it means that right doesnot exist//so lowest = lowest of left and current
-			root = (heap.get(left).getFrequency() < current.getFrequency()) ? heap.get(left) : current;
-			System.out.println("else-->"+heap.indexOf(root));
+			root = (heap.get(left).freq < current.freq) ? heap.get(left) : current;
+			//System.out.println("else-->"+heap.indexOf(root));
 		}
 		int rootIndex = heap.indexOf(root);
 		if(rootIndex != index){
-			System.out.println(heap.size()+"--"+rootIndex+"--"+index);
+			//System.out.println(heap.size()+"--"+rootIndex+"--"+index);
 			//System.out.println(heap.get(rootIndex));
-			for(Heap  h : heap) System.out.println(heap.indexOf(h)+"--"+h);
+			//for(Heap  h : heap) System.out.println(heap.indexOf(h)+"--"+h);
 			heap.set(rootIndex, current);//swap(lowest,current)
 			heap.set(index,root);	
 			if(rootIndex < (int)Math.floor( (heap.size()-1)/2 ) ) //check if it is last node or a subtree by current<lastnode
@@ -86,7 +86,7 @@ public class HuffmanMain {
 	}
 	
 	public static Heap extractMin(ArrayList<Heap> heap) throws Exception {//check heap size 
-		System.out.println("ExtractMin Called:"+heap.size());
+		//System.out.println("ExtractMin Called:"+heap.size());
 		if(heap.size()<1) throw new Exception("Cannot extract more!");
 		Heap first = heap.get(0);//fetch first
 		heap.set(0, heap.get(heap.size()-1));//swap (first ,last)
@@ -96,11 +96,11 @@ public class HuffmanMain {
 	}
 	
 	public static void insertMin(ArrayList<Heap> heap,Heap item) {
-		System.out.println("Insert min called:"+heap.size()+"--"+item);
+		//System.out.println("Insert min called:"+heap.size()+"--"+item);
 		int size = heap.size();
 		int parentIndex = (int)Math.floor((size-1)/2);
 		heap.add(item);
-		while( (heap.get(parentIndex)).getFrequency() > item.getFrequency() && size>0 ){
+		while( (heap.get(parentIndex)).freq > item.freq && size>0 ){
 			heap.set(size,heap.get(parentIndex));
 			size = parentIndex;
 			parentIndex = (int)Math.floor((size-1)/2);
@@ -109,14 +109,29 @@ public class HuffmanMain {
 	}
 	
 	public static void encode(ArrayList<Heap> heap) throws Exception {
-		//int heapSize = ;
 		while(heap.size()>1) {
-			System.out.println(heap.size());
-			Heap a = extractMin(heap);
-			Heap b = extractMin(heap);
-			Heap c = new Heap((char)(a.getFrequency()+b.getFrequency()),a.getFrequency()+b.getFrequency());
-			insertMin(heap,c);
+			//System.out.println(heap.size());
+			Heap left = extractMin(heap);
+			Heap right = extractMin(heap);
+			insertMin(heap,new Heap(left.freq + right.freq,left,right));
 		}
+		Heap root = extractMin(heap);
+		setCodes(root);
+		
+	}
+	
+	public static void setCodes(Heap root) {
+	if (!root.isLeaf) {	
+			if (root.right != null) {
+				root.right.code = root.right.code.concat(root.code+"1");
+				setCodes(root.right);
+			}
+			if (root.left != null) {
+				root.left.code = root.left.code.concat(root.code+"0");
+				setCodes(root.left);
+			}
+		}
+	
 	}
 	
 	
