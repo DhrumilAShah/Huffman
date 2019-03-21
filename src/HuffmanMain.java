@@ -1,14 +1,21 @@
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
 public class HuffmanMain {
 	
+	static String[] codes = new String[256];
+	
 	public static void main(String[] args) throws Exception {
 		
-		File file = new File("huffmanTest"); 	    
+		File file = new File("p.jpg");
+		String fileName = file.getName();
 		BufferedInputStream br = new BufferedInputStream(new FileInputStream(file));  
 		  int i = 0;
 		  StringBuilder str = new StringBuilder();
@@ -24,16 +31,34 @@ public class HuffmanMain {
 		  ArrayList<Heap> heapArr = toFrequencyArray(freq);
 		  
 		  buildMinHeap(heapArr,heapArr.size());
+		  
+		  
 		  	  
 		  //System.out.println(extractMin(heapArr));
-		  
 		  //insertMin(heapArr,new Heap('z',2));
 		  
 		  encode(heapArr);
 		  
-		  for(Heap  h : heapArr) System.out.println(h);
-
+		  //BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(fileName+".huff"));
 		  
+		  //for(Heap  h : heapArr) System.out.println(h);
+		  FileWriter fw = new FileWriter(fileName+".huff", true);
+		  BufferedWriter bw  = new BufferedWriter(fw);
+			
+		  int offset = 0;
+		  for(char k : charArray) {
+			  char [] d = codes[k].toCharArray();
+			  for(char c : d) {
+				  bw.write(c);
+			  }
+			 // int len = codes[k].length();
+			  //System.out.println( codes[k] );
+			  //os.write((codes[k]).getBytes(),offset,len);
+			  offset++;
+		  }
+		  System.out.println( offset+"--"+(offset*8) );
+		  bw.close();
+		 // os.close();
 	} 
 	
 	public static int[] getFrequency(char[] charArray) {
@@ -120,9 +145,9 @@ public class HuffmanMain {
 		
 	}
 	
-	public static void setCodes(Heap root) {
+	public static void setCodes(Heap root){
 	if (!root.isLeaf) {	
-			if (root.right != null) {
+			if (root.right != null){
 				root.right.code = root.right.code.concat(root.code+"1");
 				setCodes(root.right);
 			}
@@ -130,10 +155,20 @@ public class HuffmanMain {
 				root.left.code = root.left.code.concat(root.code+"0");
 				setCodes(root.left);
 			}
+		} else {
+			//System.out.println(root+"--"+root.code);
+			codes[(int)root.data] = root.code;
 		}
 	
 	}
 	
+	public static boolean deleteFile(String filename) {
+		return new File(filename).delete();
+	}
+	
+	public static void makeFile() {
+		
+	}
 	
 	
 	
