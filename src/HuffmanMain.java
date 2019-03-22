@@ -38,26 +38,55 @@ public class HuffmanMain {
 		  //insertMin(heapArr,new Heap('z',2));
 		  
 		  encode(heapArr);
-		  
+		  deleteFile(fileName+".huff");
+		  BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(fileName+".huff"));
 		  //BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(fileName+".huff"));
-		  
+		  //System.out.println("input--"+charArray.length);
 		  //for(Heap  h : heapArr) System.out.println(h);
-		  FileWriter fw = new FileWriter(fileName+".huff", true);
-		  BufferedWriter bw  = new BufferedWriter(fw);
+		  
+		  //FileWriter fw = new FileWriter(fileName+".huff", true);
+		  //BufferedWriter bw  = new BufferedWriter(fw);
 			
-		  int offset = 0;
-		  for(char k : charArray) {
-			  char [] d = codes[k].toCharArray();
-			  for(char c : d) {
-				  bw.write(c);
-			  }
-			 // int len = codes[k].length();
-			  //System.out.println( codes[k] );
-			  //os.write((codes[k]).getBytes(),offset,len);
-			  offset++;
+		  for(Heap c : heapArr) {
+			os.write((codes[c.data]).getBytes());
+			os.write(c.data);
 		  }
-		  System.out.println( offset+"--"+(offset*8) );
-		  bw.close();
+		  
+		  
+		  int data = 0;
+		  int dataLen = 0;
+		  int counter=0;
+		  //int max=0;
+		  for(char k : charArray) {
+			  String d = codes[k];
+			  //System.out.println(k+"-->"+codes[k]);
+			  //if(d.length>max)	max=d.length;
+			  for(char c : d.toCharArray()) {
+				  if(c=='1') {
+					  data <<= 1;
+					  data |=  1 ;
+				  }else{
+					  data <<= 0;
+				  }
+				  dataLen++;
+				  if(dataLen==8) {
+					  //System.out.println(data);
+					  counter++;
+					  os.write(data);			  
+					  //System.out.println(counter+"--"+dataLen);
+					  data = dataLen = 0; 
+				  }  
+			  }
+		  }
+		  
+		  if( dataLen>0 ) {
+			 // System.out.println(dataLen);
+			  data<<= 8 - dataLen;
+			  os.write(data);
+		  }
+		  System.out.println("--"+counter);
+		  os.flush();
+		  os.close();
 		 // os.close();
 	} 
 	
@@ -84,11 +113,11 @@ public class HuffmanMain {
 		Heap root = null;
 		Heap current = heap.get(index);
 		if(right < heap.size()) {//lowest = lowest of tree 
-			root = heap.get((heap.get(left)).freq < (heap.get(right)).freq ? left : right) ;
-			root = (root.freq < current.freq) ? root : current;
+			root = heap.get((heap.get(left)).freq <= (heap.get(right)).freq ? left : right) ;
+			root = (root.freq <= current.freq) ? root : current;
 			//System.out.println("if-->"+heap.indexOf(root));
 		}else {//if flow comes here, it means that right doesnot exist//so lowest = lowest of left and current
-			root = (heap.get(left).freq < current.freq) ? heap.get(left) : current;
+			root = (heap.get(left).freq <= current.freq) ? heap.get(left) : current;
 			//System.out.println("else-->"+heap.indexOf(root));
 		}
 		int rootIndex = heap.indexOf(root);
@@ -147,18 +176,22 @@ public class HuffmanMain {
 	
 	public static void setCodes(Heap root){
 	if (!root.isLeaf) {	
-			if (root.right != null){
-				root.right.code = root.right.code.concat(root.code+"1");
-				setCodes(root.right);
-			}
-			if (root.left != null) {
-				root.left.code = root.left.code.concat(root.code+"0");
-				setCodes(root.left);
-			}
-		} else {
-			//System.out.println(root+"--"+root.code);
-			codes[(int)root.data] = root.code;
+		if (root.left != null) {
+			root.left.code = root.left.code.concat(root.code+"0");
+			setCodes(root.left);
+		}else {
+			System.out.println("Left found null");
 		}
+		if (root.right != null){
+			root.right.code = root.right.code.concat(root.code+"1");
+			setCodes(root.right);
+		}else {
+			System.out.println("Ryt found null");
+		}		
+	} else {
+		//System.out.println(root+"--"+root.code);
+		codes[(int)root.data] = root.code;
+	}
 	
 	}
 	
