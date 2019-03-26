@@ -1,101 +1,48 @@
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class HuffmanMain {
-	
+
 	static String[] codes = new String[256];
-	
+	static FileWriter fileWriter;
+	static FileReader fileReader;
+
 	public static void main(String[] args) throws Exception {
-		
-		File file = new File("p.jpg");
+
+		File file = new File("huffmanTest");
 		String fileName = file.getName();
-		BufferedInputStream br = new BufferedInputStream(new FileInputStream(file));  
-		  int i = 0;
-		  StringBuilder str = new StringBuilder();
-		  while ((i = br.read())!=-1){ 
-			 i = (int)((char)i & 0xFF);//0xff is 32-bit, it will mask zeros.
-			 str.append((char)i);
-		  } 
-		  br.close();
-		  
-		  char[] charArray  = new String(str).toCharArray();
-		  int[] freq = getFrequency(charArray);
-		  
-		  ArrayList<Heap> heapArr = toFrequencyArray(freq);
-		  
-		  buildMinHeap(heapArr,heapArr.size());
-		  
-		  
-		  	  
-		  //System.out.println(extractMin(heapArr));
-		  //insertMin(heapArr,new Heap('z',2));
-		  
-		  encode(heapArr);
-		  deleteFile(fileName+".huff");
-		  BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(fileName+".huff"));
-		  //BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(fileName+".huff"));
-		  //System.out.println("input--"+charArray.length);
-		  //for(Heap  h : heapArr) System.out.println(h);
-		  
-		  //FileWriter fw = new FileWriter(fileName+".huff", true);
-		  //BufferedWriter bw  = new BufferedWriter(fw);
-			
-		  for(Heap c : heapArr) {
-			os.write((codes[c.data]).getBytes());
-			os.write(c.data);
-		  }
-		  
-		  
-		  int data = 0;
-		  int dataLen = 0;
-		  int counter=0;
-		  //int max=0;
-		  for(char k : charArray) {
-			  String d = codes[k];
-			  //System.out.println(k+"-->"+codes[k]);
-			  //if(d.length>max)	max=d.length;
-			  for(char c : d.toCharArray()) {
-				  if(c=='1') {
-					  data <<= 1;
-					  data |=  1 ;
-				  }else{
-					  data <<= 0;
-				  }
-				  dataLen++;
-				  if(dataLen==8) {
-					  //System.out.println(data);
-					  counter++;
-					  os.write(data);			  
-					  //System.out.println(counter+"--"+dataLen);
-					  data = dataLen = 0; 
-				  }  
-			  }
-		  }
-		  
-		  if( dataLen>0 ) {
-			 // System.out.println(dataLen);
-			  data<<= 8 - dataLen;
-			  os.write(data);
-		  }
-		  System.out.println("--"+counter);
-		  os.flush();
-		  os.close();
-		 // os.close();
+
+		fileReader = new FileReader();
+
+		char[] charArray  = fileReader.readFile(file).toCharArray();
+
+		//System.out.println("read-->"+charArray.length);
+
+		int[] freq = getFrequency(charArray);
+
+		ArrayList<Heap> heapArr = toFrequencyArray(freq);
+
+		buildMinHeap(heapArr,heapArr.size());
+
+		fileWriter = new FileWriter(fileName+".huff");
+		
+		encode(heapArr);
+
+		//fileWriter.deleteFile(fileName+".huff");
+		//System.out.println(codes.length);		
+		
+		fileWriter.writeFile(charArray,codes);	
+
+		//deleteFile(fileName);
+		fileWriter.close();
 	} 
-	
+
 	public static int[] getFrequency(char[] charArray) {
 		int[] frequency = new int[256];
 		for(char c:charArray) frequency[c]++;
 		return frequency;
 	}
-	
+
 	public static ArrayList<Heap> toFrequencyArray(int[] freq) {
 		ArrayList<Heap> alHeap= new ArrayList<Heap>();
 		int index=0;
@@ -105,7 +52,7 @@ public class HuffmanMain {
 		}
 		return alHeap;
 	}
-	
+
 	public static void minDownHeap(ArrayList<Heap> heap,int index) {
 		//System.out.println("inside minDownHeap: "+heap.size()+"--"+index);
 		int right = 2*index+2;
@@ -131,14 +78,14 @@ public class HuffmanMain {
 				minDownHeap(heap,rootIndex);
 		}
 	}
-	
+
 	public static void buildMinHeap(ArrayList<Heap> heap,int size) {
 		int max = (int)Math.floor((size-1)/2);
 		for(int i=max-1; i>=0; i--) {
 			minDownHeap(heap,i);
 		}
 	}
-	
+
 	public static Heap extractMin(ArrayList<Heap> heap) throws Exception {//check heap size 
 		//System.out.println("ExtractMin Called:"+heap.size());
 		if(heap.size()<1) throw new Exception("Cannot extract more!");
@@ -148,7 +95,7 @@ public class HuffmanMain {
 		if(heap.size()>1)	minDownHeap(heap,0);
 		return first;
 	}
-	
+
 	public static void insertMin(ArrayList<Heap> heap,Heap item) {
 		//System.out.println("Insert min called:"+heap.size()+"--"+item);
 		int size = heap.size();
@@ -161,7 +108,7 @@ public class HuffmanMain {
 		}
 		heap.set((size>0)?size:0, item);
 	}
-	
+
 	public static void encode(ArrayList<Heap> heap) throws Exception {
 		while(heap.size()>1) {
 			//System.out.println(heap.size());
@@ -171,41 +118,55 @@ public class HuffmanMain {
 		}
 		Heap root = extractMin(heap);
 		setCodes(root);
-		
+		writeHeapToFile(root);
+
 	}
-	
+
 	public static void setCodes(Heap root){
-	if (!root.isLeaf) {	
-		if (root.left != null) {
-			root.left.code = root.left.code.concat(root.code+"0");
-			setCodes(root.left);
-		}else {
-			System.out.println("Left found null");
+		if (!root.isLeaf) {	
+			if (root.left != null) {
+				root.left.code = root.left.code.concat(root.code+"0");
+				setCodes(root.left);
+			}else {
+				System.out.println("Left found null");
+			}
+			if (root.right != null){
+				root.right.code = root.right.code.concat(root.code+"1");
+				setCodes(root.right);
+			}else {
+				System.out.println("Ryt found null");
+			}		
+		} else {
+			//System.out.println(root+"--"+root.code);
+			codes[(int)root.data] = root.code;
 		}
-		if (root.right != null){
-			root.right.code = root.right.code.concat(root.code+"1");
-			setCodes(root.right);
-		}else {
-			System.out.println("Ryt found null");
-		}		
-	} else {
-		//System.out.println(root+"--"+root.code);
-		codes[(int)root.data] = root.code;
+
 	}
-	
-	}
-	
-	public static boolean deleteFile(String filename) {
-		return new File(filename).delete();
-	}
-	
-	public static void makeFile() {
-		
-	}
-	
-	
-	
-	
-	
-	
-} 
+
+	public static void writeHeapToFile(Heap root) {
+		try {
+			if (!root.isLeaf) {
+				fileWriter.writeBool(true);
+				if (root.right != null) {
+					writeHeapToFile(root.right);
+				}
+//				else {
+//					System.out.println("Right found null");
+//				}
+				if (root.left != null) {
+					writeHeapToFile(root.left);
+				}
+//				else {
+//					System.out.println("Left found null");
+//				}
+
+			}
+			else {
+				fileWriter.writeBool(false);
+				fileWriter.writeChar(root.data);
+			}		
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	} 
+}
