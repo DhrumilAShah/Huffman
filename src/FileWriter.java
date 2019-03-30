@@ -43,6 +43,7 @@ public class FileWriter {
 			//System.out.println("inside bool...");
 			dataBuff <<= 1;
 			if (bit) dataBuff |= 1;
+			//System.out.println("bool-->"+dataBuff);
 			if (++lenOfDataBuff == 8) writeDataBuffer();
 		}catch(Exception e) {
 			System.out.println(e.getMessage());
@@ -61,33 +62,32 @@ public class FileWriter {
 	private static void writeDataBuffer() {
 
 		if(lenOfDataBuff == 0) return;
-
-		//If buffer is not full, shift the bits to right and pad with 0s
 		if (lenOfDataBuff > 0) 
 			dataBuff<<= 8 - lenOfDataBuff;
 
 		try {
+			dataBuff = dataBuff & 0xFF;
+			System.out.println("-->"+dataBuff);
 			os.write(dataBuff);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		lenOfDataBuff = 0;
 		dataBuff = 0;
-
 	}
 
 
-	private void writeByte(int myByte) {
-		if (lenOfDataBuff == 0) {
+	private void writeByte(int byt) {
+		if (lenOfDataBuff == 0) { 
 			try {
-				os.write(myByte);
+				os.write(byt);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		else {
+		else { // if buffer has data in it and we need to write character of 8 bits
 			for (int i = 0; i < 8; i++) {
-				boolean bit = ((myByte >>> (7-i)) & 1) == 1;
+				boolean bit = ((byt >>> (7-i)) & 1) == 1;//fetch a single bit from byt
 				writeBool(bit);
 			}
 		}

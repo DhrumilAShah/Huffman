@@ -1,7 +1,7 @@
 import java.io.File;
 import java.util.ArrayList;
 
-public class HuffmanMain {
+public class henc {
 
 	static String[] codes = new String[256];
 	static FileWriter fileWriter;
@@ -9,14 +9,12 @@ public class HuffmanMain {
 
 	public static void main(String[] args) throws Exception {
 
-		File file = new File("huffmanTest");
+		File file = new File("s.txt");
 		String fileName = file.getName();
 
 		fileReader = new FileReader();
 
-		char[] charArray  = fileReader.readFile(file).toCharArray();
-
-		//System.out.println("read-->"+charArray.length);
+		char[] charArray  = fileReader.readFileForEncoder(file).toCharArray();
 
 		int[] freq = getFrequency(charArray);
 
@@ -24,17 +22,23 @@ public class HuffmanMain {
 
 		buildMinHeap(heapArr,heapArr.size());
 
-		fileWriter = new FileWriter(fileName+".huff");
-		
+		fileWriter = new FileWriter(fileName+".huf");
+
 		encode(heapArr);
+
+//		for(int i=0;i<256;i++) {
+//			if(codes[i] != null)
+//				System.out.println((char)i+" -->"+codes[i]);
+//		}
 
 		//fileWriter.deleteFile(fileName+".huff");
 		//System.out.println(codes.length);		
-		
+
 		fileWriter.writeFile(charArray,codes);	
 
 		//deleteFile(fileName);
 		fileWriter.close();
+		System.out.println("Compression complete...");
 	} 
 
 	public static int[] getFrequency(char[] charArray) {
@@ -145,28 +149,35 @@ public class HuffmanMain {
 
 	public static void writeHeapToFile(Heap root) {
 		try {
-			if (!root.isLeaf) {
+			//			if (!root.isLeaf) {
+			//				System.out.println("true");
+			//				fileWriter.writeBool(true);
+			//				if (root.right != null) {
+			//					writeHeapToFile(root.right);
+			//				}
+			//				if (root.left != null) {
+			//					writeHeapToFile(root.left);
+			//				}
+			//			}
+			//			else {
+			//				System.out.println("false: "+root.data);
+			//				fileWriter.writeBool(false);
+			//				fileWriter.writeChar(root.data);
+			//			}
+			if (root.isLeaf) {
+				System.out.println("true");
+				System.out.println(root.data);
 				fileWriter.writeBool(true);
-				if (root.right != null) {
-					writeHeapToFile(root.right);
-				}
-//				else {
-//					System.out.println("Right found null");
-//				}
-				if (root.left != null) {
-					writeHeapToFile(root.left);
-				}
-//				else {
-//					System.out.println("Left found null");
-//				}
-
-			}
-			else {
-				fileWriter.writeBool(false);
 				fileWriter.writeChar(root.data);
-			}		
+			}else {
+				fileWriter.writeBool(false);
+				System.out.println("false");
+				writeHeapToFile(root.left);
+				writeHeapToFile(root.right);
+			}
 		}catch(Exception e) {
+			System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
-	} 
+	}
 }

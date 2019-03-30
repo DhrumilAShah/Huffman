@@ -27,45 +27,6 @@ public class Heap {
 		this.freq=0;
 		this.code="";
 	}
-
-//	public Heap getLeft() {
-//		return left;
-//	}
-//	public void setLeft(Heap left) {
-//		if(left!=null) {
-//			isLeaf=false;
-//		}
-//		this.left = left;
-//	}
-//	public Heap getRight() {
-//		return right;
-//	}
-//	public void setRight(Heap right) {
-//		if(right!=null) {
-//			isLeaf=false;
-//		}
-//		this.right = right;
-//	}
-//	public int getFrequency() {
-//		return freq;
-//	}
-//	public void setFrequency(int freq) {
-//		this.freq = freq;
-//	}
-//	public char getData() {
-//		return data;
-//	}
-//	public void setData(char data) {
-//		this.data = data;
-//	}
-//
-//	public String getCode() {
-//		return code;
-//	}
-//
-//	public void setCode(String code) {
-//		this.code = code;
-//	}
 	
 	@Override
 	public String toString() {
