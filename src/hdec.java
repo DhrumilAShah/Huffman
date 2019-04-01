@@ -1,70 +1,59 @@
-import java.io.File;
-
 public class hdec {
-	
-	
-	static String[] codes = new String[256];
+
 	static FileWriter fileWriter;
-	static FileReader fileReader;
-	
-	
+	static FileReader fileReader;	
+
 	public static void main(String[] args) {
-		
+		try {
 
-		//File file = new File("s.txt.huf");
-		//String fileName = file.getName();
+			String fileName = null;
 
-		fileReader = new FileReader("s.txt.huf");
+			if(args.length!=1) 
+				throw new Error("File name should be the first argument!");
+			
+			fileName = args[0].trim();
+			
+			fileReader = new FileReader(fileName);
+			fileWriter = new FileWriter(fileName.substring(0,fileName.length()-4).trim());
+			
+			decompress();
+			
+			fileWriter.deleteFile(fileName);
+
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 		
-		//char[] charArray  = null; //fileReader.readFile(file).toCharArray();
+		fileWriter.close();
+		fileReader.close();
 		
-		//System.out.println(charArray.length);
-//		for(char c:charArray) {
-//			System.out.print(c);
-//		}
-		
-//		for(int i=0; i<10; i++) {
-//			System.out.println(fileReader.readBool());
-//		}
-		
-		decompress();
+		System.exit(0);
+	}	
+
+	public static void decompress() {
+		try {
+			// read huffmanTree
+			Heap root = readHeap(); 	
+			// number of bytes to write
+			int fileSize = fileReader.getCurrentFileSize();
+
+			for (int i = 0; i < fileSize; i++) {
+				Heap temp = root;
+				while (!temp.isLeaf) 
+					temp = ( fileReader.readBool() ) ? temp.right : temp.left;         
+				fileWriter.writeChar(temp.data);
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
-	
-	
-    public static void decompress() {
-    	try {
 
-        // read in Huffman tree from input stream
-        Heap root = readHeap(); 
+	private static Heap readHeap() {
+		boolean isLeaf = fileReader.readBool();
+		return (isLeaf)? new Heap(fileReader.readChar(), -1) : new Heap(-1, readHeap(), readHeap());
+	}
 
-        // number of bytes to write
-        int length = 2;//BinaryStdIn.readInt();
 
-        // decode using the Huffman tree
-        for (int i = 0; i < length; i++) {
-            Heap x = root;
-            while (!x.isLeaf) {
-            	boolean b = fileReader.readBool();
-            	System.out.println(b);
-                x = ( b ) ? x.right : x.left;
-            }
-            System.out.println(x.data);
-            //BinaryStdOut.write(x.data, 8);
-        }
-        fileReader.close();
-    	}catch(Exception e) {
-    		e.printStackTrace();
-    	}
-    }
 
-    
-    private static Heap readHeap() {
-        boolean isLeaf = fileReader.readBool();
-        //System.out.println("-->"+isLeaf);
-        return (isLeaf)? new Heap(fileReader.readChar(), -1) : new Heap(-1, readHeap(), readHeap());
-    }
-	
-	
-	
 
 }

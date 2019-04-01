@@ -7,27 +7,23 @@ import java.io.IOException;
 public class FileWriter {
 
 	private static int dataBuff;
-	private static int lenOfDataBuff;
-	private static BufferedOutputStream os;
+	private static int sizeOfDataBuff;
+	private static BufferedOutputStream optStream;
 
 	public FileWriter(String filename) {
 		try {
-			os = new BufferedOutputStream(new FileOutputStream(filename));
+			optStream = new BufferedOutputStream(new FileOutputStream(filename));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
 
-
 	public  void writeFile(char[] charArray, String codes[]) {
-		
+
 		try {
-			for(char k : charArray) {
-				for(char c : codes[k].toCharArray()) {
-					//System.out.println("inside writefile...");
+			for(char k : charArray)
+				for(char c : codes[k].toCharArray()) 
 					writeBool( (c=='1') ? true : false );
-				}
-			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -40,11 +36,12 @@ public class FileWriter {
 
 	public void writeBool(boolean bit) {
 		try {
-			//System.out.println("inside bool...");
+			//shifft all elements to left by 1 
 			dataBuff <<= 1;
+			//append 1 
 			if (bit) dataBuff |= 1;
-			//System.out.println("bool-->"+dataBuff);
-			if (++lenOfDataBuff == 8) writeDataBuffer();
+			//if size of buff = 8 then write 1 byte
+			if (++sizeOfDataBuff == 8) writeDataBuffer();
 		}catch(Exception e) {
 			System.out.println(e.getMessage());
 		}
@@ -61,50 +58,53 @@ public class FileWriter {
 
 	private static void writeDataBuffer() {
 
-		if(lenOfDataBuff == 0) return;
-		if (lenOfDataBuff > 0) 
-			dataBuff<<= 8 - lenOfDataBuff;
+		if(sizeOfDataBuff == 0) return;
+		if (sizeOfDataBuff > 0) 
+			dataBuff<<= 8 - sizeOfDataBuff;
 
 		try {
 			dataBuff = dataBuff & 0xFF;
-			System.out.println("-->"+dataBuff);
-			os.write(dataBuff);
+			optStream.write(dataBuff);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		lenOfDataBuff = 0;
+		sizeOfDataBuff = 0;
 		dataBuff = 0;
 	}
 
 
 	private void writeByte(int byt) {
-		if (lenOfDataBuff == 0) { 
+		if (sizeOfDataBuff == 0) { 
 			try {
-				os.write(byt);
+				optStream.write(byt);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		else { // if buffer has data in it and we need to write character of 8 bits
+		else { 
+			// if flow comes here it means, we need to write a character
+			// if buffer has data in it and we need to write character of 8 bits
 			for (int i = 0; i < 8; i++) {
-				boolean bit = ((byt >>> (7-i)) & 1) == 1;//fetch a single bit from byt
-				writeBool(bit);
+				//fetch a single bit from byt
+				//write bit by bit, >>> will move to right and append 0 
+				//& 1 will remove all the elements except the last one
+				writeBool( ((byt >>> (7-i)) & 1) == 1 );
 			}
 		}
+	}
+
+	public void writeFileSize(int size) {
+		for(int i=24; i >= 0; i = i-8) 
+			writeByte((size >>> i) & 0xff);
 	}
 
 	public void close() {
 		writeDataBuffer();
 		try {
-			os.flush();
-			os.close();
+			optStream.flush();
+			optStream.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-
-
-
-
-
 }

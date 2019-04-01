@@ -8,13 +8,21 @@ public class henc {
 	static FileReader fileReader;
 
 	public static void main(String[] args) throws Exception {
+		
+		String fileName = null;
 
-		File file = new File("s.txt");
-		String fileName = file.getName();
+		if(args.length!=1) 
+			throw new Error("File name should be the first argument!");
+		
+		fileName = args[0].trim();
+		
+		File file = new File(fileName);
 
 		fileReader = new FileReader();
 
 		char[] charArray  = fileReader.readFileForEncoder(file).toCharArray();
+		
+		//fileReader.close();
 
 		int[] freq = getFrequency(charArray);
 
@@ -25,20 +33,17 @@ public class henc {
 		fileWriter = new FileWriter(fileName+".huf");
 
 		encode(heapArr);
-
-//		for(int i=0;i<256;i++) {
-//			if(codes[i] != null)
-//				System.out.println((char)i+" -->"+codes[i]);
-//		}
-
-		//fileWriter.deleteFile(fileName+".huff");
-		//System.out.println(codes.length);		
+		
+		fileWriter.writeFileSize(charArray.length);		
 
 		fileWriter.writeFile(charArray,codes);	
 
-		//deleteFile(fileName);
+		fileWriter.deleteFile(fileName);
 		fileWriter.close();
+		
 		System.out.println("Compression complete...");
+		
+		System.exit(0);
 	} 
 
 	public static int[] getFrequency(char[] charArray) {
@@ -49,7 +54,7 @@ public class henc {
 
 	public static ArrayList<Heap> toFrequencyArray(int[] freq) {
 		ArrayList<Heap> alHeap= new ArrayList<Heap>();
-		int index=0;
+		int index = 0;
 		for(int i:freq) {
 			if(i!=0) alHeap.add(new Heap((char)index,i));
 			++index;
@@ -58,41 +63,47 @@ public class henc {
 	}
 
 	public static void minDownHeap(ArrayList<Heap> heap,int index) {
-		//System.out.println("inside minDownHeap: "+heap.size()+"--"+index);
 		int right = 2*index+2;
 		int left = 2*index+1;
+		
+		//Here root will be lowest of right and left.
 		Heap root = null;
 		Heap current = heap.get(index);
-		if(right < heap.size()) {//lowest = lowest of tree 
-			root = heap.get((heap.get(left)).freq <= (heap.get(right)).freq ? left : right) ;
+		
+		if(right < heap.size()) {
+			//root = lowest of three tree 
+			root = heap.get((heap.get(left)).freq <= (heap.get(right)).freq ? left : right);
 			root = (root.freq <= current.freq) ? root : current;
-			//System.out.println("if-->"+heap.indexOf(root));
-		}else {//if flow comes here, it means that right doesnot exist//so lowest = lowest of left and current
+		}else {
+			//if flow comes here, it means that right doesnot exist
+			//so root = lowest of left and current
 			root = (heap.get(left).freq <= current.freq) ? heap.get(left) : current;
-			//System.out.println("else-->"+heap.indexOf(root));
 		}
+		
 		int rootIndex = heap.indexOf(root);
+		
 		if(rootIndex != index){
-			//System.out.println(heap.size()+"--"+rootIndex+"--"+index);
-			//System.out.println(heap.get(rootIndex));
-			//for(Heap  h : heap) System.out.println(heap.indexOf(h)+"--"+h);
-			heap.set(rootIndex, current);//swap(lowest,current)
-			heap.set(index,root);	
-			if(rootIndex < (int)Math.floor( (heap.size()-1)/2 ) ) //check if it is last node or a subtree by current<lastnode
+			//if flow come here it means that root is not lowest
+			//so we need to set root at top
+			heap.set(rootIndex, current); //swap(root,current)
+			heap.set(index,root);
+			
+			//check if it is last node or a subtree by current<lastnode
+			if(rootIndex < (int)Math.floor( (heap.size()-1)/2 ) ) 
 				minDownHeap(heap,rootIndex);
 		}
+		
 	}
 
 	public static void buildMinHeap(ArrayList<Heap> heap,int size) {
 		int max = (int)Math.floor((size-1)/2);
-		for(int i=max-1; i>=0; i--) {
+		for(int i=max-1; i>=0; i--) 
 			minDownHeap(heap,i);
-		}
 	}
 
-	public static Heap extractMin(ArrayList<Heap> heap) throws Exception {//check heap size 
-		//System.out.println("ExtractMin Called:"+heap.size());
-		if(heap.size()<1) throw new Exception("Cannot extract more!");
+	public static Heap extractMin(ArrayList<Heap> heap) throws Exception {
+		//check heap size 
+		if(heap.size()<1) throw new Exception("Limit Reached");
 		Heap first = heap.get(0);//fetch first
 		heap.set(0, heap.get(heap.size()-1));//swap (first ,last)
 		heap.remove(heap.size()-1);//delete last
@@ -101,77 +112,58 @@ public class henc {
 	}
 
 	public static void insertMin(ArrayList<Heap> heap,Heap item) {
-		//System.out.println("Insert min called:"+heap.size()+"--"+item);
 		int size = heap.size();
 		int parentIndex = (int)Math.floor((size-1)/2);
+		//add item to last
 		heap.add(item);
-		while( (heap.get(parentIndex)).freq > item.freq && size>0 ){
+		
+		while( (heap.get(parentIndex)).freq > item.freq && size > 0 ){
+			//loop until parents frequency is greater then its child
+			//swap with parent
 			heap.set(size,heap.get(parentIndex));
 			size = parentIndex;
 			parentIndex = (int)Math.floor((size-1)/2);
 		}
-		heap.set((size>0)?size:0, item);
+		
+		heap.set((size > 0) ? size : 0, item);
 	}
 
 	public static void encode(ArrayList<Heap> heap) throws Exception {
-		while(heap.size()>1) {
-			//System.out.println(heap.size());
+		while(heap.size() > 1) {
+			//remove unit last one is root 
 			Heap left = extractMin(heap);
 			Heap right = extractMin(heap);
 			insertMin(heap,new Heap(left.freq + right.freq,left,right));
 		}
 		Heap root = extractMin(heap);
-		setCodes(root);
+		setHeapCodes(root);
 		writeHeapToFile(root);
-
 	}
 
-	public static void setCodes(Heap root){
+	public static void setHeapCodes(Heap root){
+		//is root is a leaf then only it will have a character
 		if (!root.isLeaf) {	
 			if (root.left != null) {
 				root.left.code = root.left.code.concat(root.code+"0");
-				setCodes(root.left);
-			}else {
-				System.out.println("Left found null");
+				setHeapCodes(root.left);
 			}
+			
 			if (root.right != null){
 				root.right.code = root.right.code.concat(root.code+"1");
-				setCodes(root.right);
-			}else {
-				System.out.println("Ryt found null");
-			}		
+				setHeapCodes(root.right);
+			}	
 		} else {
-			//System.out.println(root+"--"+root.code);
 			codes[(int)root.data] = root.code;
 		}
-
 	}
 
 	public static void writeHeapToFile(Heap root) {
 		try {
-			//			if (!root.isLeaf) {
-			//				System.out.println("true");
-			//				fileWriter.writeBool(true);
-			//				if (root.right != null) {
-			//					writeHeapToFile(root.right);
-			//				}
-			//				if (root.left != null) {
-			//					writeHeapToFile(root.left);
-			//				}
-			//			}
-			//			else {
-			//				System.out.println("false: "+root.data);
-			//				fileWriter.writeBool(false);
-			//				fileWriter.writeChar(root.data);
-			//			}
 			if (root.isLeaf) {
-				System.out.println("true");
-				System.out.println(root.data);
 				fileWriter.writeBool(true);
 				fileWriter.writeChar(root.data);
 			}else {
 				fileWriter.writeBool(false);
-				System.out.println("false");
 				writeHeapToFile(root.left);
 				writeHeapToFile(root.right);
 			}
