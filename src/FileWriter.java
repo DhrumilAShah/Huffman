@@ -18,7 +18,7 @@ public class FileWriter {
 		}
 	}
 
-	public  void writeFile(char[] charArray, String codes[]) {
+	public void writeFile(char[] charArray, String codes[]) {
 
 		try {
 			for(char k : charArray)
@@ -50,8 +50,10 @@ public class FileWriter {
 	/**
 	 * Write char to file
 	 * @param ch
+	 * @throws Exception 
 	 */
-	public void writeChar(char ch) {
+	public void writeChar(char ch) throws Exception {
+		 if (ch < 0 || ch >= 256)	throw new Exception("Only 8-bit char acepted: " + ch);
 		writeByte(ch);
 	}
 

@@ -8,6 +8,7 @@ public class FileReader {
 	private static int dataBuff;
 	private static int sizeOfDataBuff;
 	private static BufferedInputStream br;
+	private static final int EOF = -1;
 
 	public FileReader() {
 		dataBuff = 0;
@@ -74,15 +75,15 @@ public class FileReader {
 				
 			} else { 
 				//size is -1, ie end of file
-				dataBuff=-1;
-				sizeOfDataBuff=-1;
+				dataBuff = EOF;
+				sizeOfDataBuff = EOF;
 				throw new Exception("End of File...!!!");
 			}
 		}catch(Exception e){
 			e.printStackTrace();
-			dataBuff=-1;
-			sizeOfDataBuff=-1;
-			return (char)-1;
+			dataBuff = EOF;
+			sizeOfDataBuff = EOF;
+			return (char)EOF;
 		}
 	}
 
@@ -99,8 +100,8 @@ public class FileReader {
 			return  ((dataBuff >> sizeOfDataBuff) & 1) == 1;
 		} catch (IOException e) {
 			e.printStackTrace();
-			dataBuff=-1;
-			sizeOfDataBuff=-1;
+			dataBuff = EOF;
+			sizeOfDataBuff = EOF;
 		}
 		return true;
 	}
@@ -109,13 +110,13 @@ public class FileReader {
 		try {
 			dataBuff = br.read();
 			sizeOfDataBuff = 8;
-			if(dataBuff==-1) {
-				sizeOfDataBuff = -1;
+			if(dataBuff == EOF) {
+				sizeOfDataBuff = EOF;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			dataBuff=-1;
-			sizeOfDataBuff = -1;
+			dataBuff = EOF;
+			sizeOfDataBuff = EOF;
 		}
 	}
 

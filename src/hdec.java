@@ -32,10 +32,12 @@ public class hdec {
 
 	public static void decompress() {
 		try {
+			// number of bytes to write
+			int fileSize = fileReader.getCurrentFileSize();
 			// read huffmanTree
 			Heap root = readHeap(); 	
 			// number of bytes to write
-			int fileSize = fileReader.getCurrentFileSize();
+			//int fileSize = fileReader.getCurrentFileSize();
 
 			for (int i = 0; i < fileSize; i++) {
 				Heap temp = root;

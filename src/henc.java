@@ -32,9 +32,11 @@ public class henc {
 
 		fileWriter = new FileWriter(fileName+".huf");
 
+		fileWriter.writeFileSize(charArray.length);
+		
 		encode(heapArr);
 		
-		fileWriter.writeFileSize(charArray.length);		
+		//fileWriter.writeFileSize(charArray.length);		
 
 		fileWriter.writeFile(charArray,codes);	
 
