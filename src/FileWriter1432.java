@@ -1,16 +1,20 @@
+// Dhrumil Shah cs610 1432 prp
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
-public class FileWriter {
+/*
+ * @author DhrumilShah
+ * To write data into file
+ */
+public class FileWriter1432 {
 
 	private static int dataBuff;
 	private static int sizeOfDataBuff;
 	private static BufferedOutputStream optStream;
 
-	public FileWriter(String filename) {
+	public FileWriter1432(String filename) {
 		try {
 			optStream = new BufferedOutputStream(new FileOutputStream(filename));
 		} catch (FileNotFoundException e) {
@@ -38,8 +42,9 @@ public class FileWriter {
 		try {
 			//shifft all elements to left by 1 
 			dataBuff <<= 1;
-			//append 1 
+			//append 1 in bit
 			if (bit) dataBuff |= 1;
+			//increment size of buffer and check 
 			//if size of buff = 8 then write 1 byte
 			if (++sizeOfDataBuff == 8) writeDataBuffer();
 		}catch(Exception e) {
@@ -47,31 +52,27 @@ public class FileWriter {
 		}
 	}
 
-	/**
-	 * Write char to file
-	 * @param ch
-	 * @throws Exception 
-	 */
 	public void writeChar(char ch) throws Exception {
-		 if (ch < 0 || ch >= 256)	throw new Exception("Only 8-bit char acepted: " + ch);
+		if (ch < 0 || ch >= 256)	throw new Exception("Only 8-bit char acepted: " + ch);
 		writeByte(ch);
 	}
 
 
-	private static void writeDataBuffer() {
+	private static boolean writeDataBuffer() {
 
-		if(sizeOfDataBuff == 0) return;
+		if(sizeOfDataBuff == 0) return false;
 		if (sizeOfDataBuff > 0) 
 			dataBuff<<= 8 - sizeOfDataBuff;
-
 		try {
 			dataBuff = dataBuff & 0xFF;
 			optStream.write(dataBuff);
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
 		}
 		sizeOfDataBuff = 0;
 		dataBuff = 0;
+		return true;
 	}
 
 
@@ -90,7 +91,7 @@ public class FileWriter {
 				//fetch a single bit from byt
 				//write bit by bit, >>> will move to right and append 0 
 				//& 1 will remove all the elements except the last one
-				writeBool( ((byt >>> (7-i)) & 1) == 1 );
+				writeBool( ((byt >>> (8-i-1)) & 1) == 1 );
 			}
 		}
 	}
@@ -99,7 +100,7 @@ public class FileWriter {
 		for(int i=24; i >= 0; i = i-8) 
 			writeByte((size >>> i) & 0xff);
 	}
-
+	//to close write buffer
 	public void close() {
 		writeDataBuffer();
 		try {

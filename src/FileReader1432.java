@@ -1,22 +1,26 @@
+// Dhrumil Shah cs610 1432 prp
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-
-public class FileReader {
+/*
+ * @author DhrumilShah
+ * To read data from file
+ */
+public class FileReader1432 {
 
 	private static int dataBuff;
 	private static int sizeOfDataBuff;
 	private static BufferedInputStream br;
 	private static final int EOF = -1;
 
-	public FileReader() {
+	public FileReader1432() {
 		dataBuff = 0;
 		sizeOfDataBuff = 0;
 		br = null;
 	}
 
-	public FileReader(String filename) {
+	public FileReader1432(String filename) {
 		try {
 			br = new BufferedInputStream(new FileInputStream(filename));
 		} catch (Exception e) {
@@ -70,8 +74,7 @@ public class FileReader {
 				sizeOfDataBuff = prevLen;
 				// append logic, first move databuffer 
 				//then OR(append) it to tempBuff
-				tempBuff = tempBuff | (dataBuff >>> sizeOfDataBuff); 
-				return (char) (tempBuff & 0xFF);
+				return (char)((tempBuff | (dataBuff >>> prevLen))& 0xFF);
 				
 			} else { 
 				//size is -1, ie end of file
@@ -105,7 +108,7 @@ public class FileReader {
 		}
 		return true;
 	}
-
+	//read and fill buffer
 	public void populateBuffer() {
 		try {
 			dataBuff = br.read();
@@ -119,17 +122,17 @@ public class FileReader {
 			sizeOfDataBuff = EOF;
 		}
 	}
-
+	//while compression first bytes is file size
 	public int getCurrentFileSize() {
 		int size = 0;
+		//int in java is 4 byte so we need to iterate 4 times
 		for (int i = 0; i < 4; i++) { 
-			size<<=8;
-			//int in java is 32-bit so we need to & it with 0xFF
-			size = size | (readChar() & 0xFF); 
+			size<<=8;//move size to left by 8 
+			size = size | (readChar() & 0xFF); // append 1 byte at a time
 		}
 		return size;
 	}
-
+	//will close file reader
 	public void close() {
 		try {
 			br.close();
